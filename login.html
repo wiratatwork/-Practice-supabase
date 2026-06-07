@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Workflow Approve</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['var(--font-family)', 'sans-serif'],
+          },
+          colors: {
+            primary: 'var(--color-primary)',
+            'primary-hover': 'var(--color-primary-hover)',
+            'mint-bg': 'var(--color-bg)',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-mint-bg flex justify-center items-center min-h-screen p-4 font-sans text-gray-800">
+  <div class="bg-white w-full max-w-md p-6 sm:p-10 rounded-2xl shadow-xl text-center">
+    <div class="flex justify-center mb-4">
+      <div class="bg-mint-bg p-3 rounded-full text-primary">
+        <i data-lucide="clipboard-check" class="w-10 h-10"></i>
+      </div>
+    </div>
+    <h2 id="auth-title" class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">เข้าสู่ระบบ</h2>
+    <p class="text-gray-500 mb-6 text-sm">ระบบจัดการเอกสารและอนุมัติ Workflow Approve</p>
+    
+    <div class="space-y-4 text-left">
+      <div class="flex flex-col">
+        <label for="email" class="text-sm font-medium text-gray-600 mb-1">อีเมลองค์กร</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <i data-lucide="mail" class="w-5 h-5"></i>
+          </div>
+          <input type="email" id="email" placeholder="name@company.com" 
+                 class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+        </div>
+      </div>
+      
+      <div class="flex flex-col">
+        <label for="password" class="text-sm font-medium text-gray-600 mb-1">รหัสผ่าน</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <i data-lucide="lock" class="w-5 h-5"></i>
+          </div>
+          <input type="password" id="password" placeholder="******" 
+                 class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+        </div>
+      </div>
+    </div>
+
+    <div id="message" class="mt-4 p-3 rounded-lg text-sm hidden"></div>
+
+    <div class="flex gap-3 mt-6">
+      <button id="btn-main" onclick="handleAuth()" 
+              class="flex-1 bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-lg transition-colors duration-300 shadow-md flex justify-center items-center gap-2">
+        <i data-lucide="log-in" class="w-5 h-5"></i>
+        <span id="btn-main-text">เข้าสู่ระบบ</span>
+      </button>
+      <button id="btn-toggle" onclick="toggleMode()" 
+              class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-lg transition-colors duration-300 flex justify-center items-center gap-2">
+        <i data-lucide="user-plus" class="w-5 h-5"></i>
+        <span id="btn-toggle-text">สมัครสมาชิก</span>
+      </button>
+    </div>
+
+    <div class="mt-6 text-sm text-gray-500">
+      <span id="toggle-text">ยังไม่มีบัญชี?</span> 
+      <a href="#" id="toggle-link" onclick="toggleMode()" 
+         class="text-primary font-bold hover:underline ml-1">ลงทะเบียนใช้งานที่นี่</a>
+    </div>
+  </div>
+
+  <script>
+    var supabaseUrl = 'https://vpznydsmopelbydpvgtv.supabase.co';
+    var supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwem55ZHNtb3BlbGJ5ZHB2Z3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3ODk0NTUsImV4cCI6MjA5NjM2NTQ1NX0.0ISPuZQpBRMkWBbwt8yASEnPuDBBoKtNSchaKgQiPd4';
+    var supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+    let isSignUpMode = false;
+
+    async function checkExistingSession() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        window.location.href = 'index.html';
+      }
+    }
+
+    function toggleMode() {
+      isSignUpMode = !isSignUpMode;
+      document.getElementById('auth-title').textContent = isSignUpMode ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
+      document.getElementById('btn-main-text').textContent = isSignUpMode ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
+      document.getElementById('btn-toggle-text').textContent = isSignUpMode ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก';
+      document.getElementById('toggle-text').textContent = isSignUpMode ? 'มีบัญชีอยู่แล้ว?' : 'ยังไม่มีบัญชี?';
+      document.getElementById('toggle-link').textContent = isSignUpMode ? 'เข้าสู่ระบบที่นี่' : 'สมัครสมาชิกที่นี่';
+      
+      const msgDiv = document.getElementById('message');
+      msgDiv.className = 'mt-4 p-3 rounded-lg text-sm hidden';
+      msgDiv.textContent = '';
+    }
+
+    function showMessage(text, type) {
+      const msgDiv = document.getElementById('message');
+      msgDiv.textContent = text;
+      msgDiv.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+      
+      if (type === 'error') {
+        msgDiv.classList.add('bg-red-100', 'text-red-700');
+      } else {
+        msgDiv.classList.add('bg-green-100', 'text-green-700');
+      }
+    }
+
+    async function handleAuth() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        showMessage('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+        return;
+      }
+
+      if (isSignUpMode) {
+        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+        if (error) {
+          showMessage(error.message, 'error');
+        } else {
+          showMessage('สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบอีเมลเพื่อยืนยันตัวตน', 'success');
+        }
+      } else {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) {
+          showMessage(error.message, 'error');
+        } else {
+          showMessage('เข้าสู่ระบบสำเร็จ กำลังพากลับไปหน้าหลัก...', 'success');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1500);
+        }
+      }
+    }
+
+    checkExistingSession();
+    lucide.createIcons();
+  </script>
+</body>
+</html>

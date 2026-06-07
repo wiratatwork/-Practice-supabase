@@ -2,131 +2,79 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>Supabase Demo - ลองทุก Feature</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Workflow Approve</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    button { margin: 5px; padding: 8px 12px; }
-    pre { background: #f4f4f4; padding: 10px; overflow: auto; }
-  </style>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/layout.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['var(--font-family)', 'sans-serif'],
+          },
+          colors: {
+            primary: 'var(--color-primary)',
+            'primary-hover': 'var(--color-primary-hover)',
+            'mint-bg': 'var(--color-bg)',
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body>
-  <h1>Supabase Feature Demo</h1>
+<body class="bg-gray-100 font-sans text-gray-800">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar Placeholder -->
+    <div id="sidebar"></div>
 
-  <div>
-    <button onclick="signUp()">Sign Up</button>
-    <button onclick="signIn()">Sign In</button>
-    <button onclick="signOut()">Sign Out</button>
-    <span id="user-status">ยังไม่ได้ล็อกอิน</span>
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Top Bar Placeholder -->
+      <div id="top-bar"></div>
+
+      <!-- Page Content -->
+      <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
+        <div class="max-w-5xl mx-auto">
+          <!-- Content will be dynamically loaded here -->
+          <div class="flex flex-col items-center justify-center h-full text-gray-400 py-20">
+            <i data-lucide="layout" class="w-16 h-16 mb-4 opacity-20"></i>
+            <p class="text-lg">ยินดีต้อนรับสู่ Workflow Approve</p>
+            <p class="text-sm">เลือกเมนูจากด้านซ้ายเพื่อเริ่มต้นใช้งาน</p>
+          </div>
+        </div>
+      </main>
+    </div>
   </div>
-
-  <hr>
-  <h2>Todo List</h2>
-  <input type="text" id="todo-input" placeholder="พิมพ์งานใหม่">
-  <button onclick="addTodo()">เพิ่ม Todo</button>
-  <button onclick="fetchTodos()">โหลดรายการ</button>
-
-  <ul id="todo-list"></ul>
-
-  <hr>
-  <h2>Realtime Status</h2>
-  <pre id="realtime-log"></pre>
 
   <script>
     var supabaseUrl = 'https://vpznydsmopelbydpvgtv.supabase.co';
     var supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwem55ZHNtb3BlbGJ5ZHB2Z3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3ODk0NTUsImV4cCI6MjA5NjM2NTQ1NX0.0ISPuZQpBRMkWBbwt8yASEnPuDBBoKtNSchaKgQiPd4';
-
     var supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
     let currentUser = null;
 
-    // ตรวจสอบสถานะผู้ใช้
     async function checkUser() {
       const { data: { user } } = await supabaseClient.auth.getUser();
       currentUser = user;
-      document.getElementById('user-status').textContent = user ? `ล็อกอินแล้ว: ${user.email}` : 'ยังไม่ได้ล็อกอิน';
-    }
-
-    // Auth
-    async function signUp() {
-      const email = prompt('ใส่อีเมล:');
-      const password = prompt('ใส่รหัสผ่าน (อย่างน้อย 6 ตัว):');
-      const { error } = await supabaseClient.auth.signUp({ email, password });
-      if (error) alert(error.message);
-      else alert('สมัครสำเร็จ! ตรวจสอบอีเมลยืนยัน');
-    }
-
-    async function signIn() {
-      const email = prompt('อีเมล:');
-      const password = prompt('รหัสผ่าน:');
-      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (error) alert(error.message);
-      else { alert('ล็อกอินสำเร็จ'); checkUser(); }
-    }
-
-    async function signOut() {
-      await supabaseClient.auth.signOut();
-      alert('ออกจากระบบแล้ว');
-      checkUser();
-    }
-
-    // CRUD
-    async function addTodo() {
-      const title = document.getElementById('todo-input').value;
-      if (!title || !currentUser) return alert('กรุณาล็อกอินก่อน');
-
-      const { error } = await supabaseClient
-        .from('todos')
-        .insert([{ title, user_id: currentUser.id }]);
-
-      if (error) alert(error.message);
-      else {
-        alert('เพิ่มสำเร็จ');
-        fetchTodos();
+      
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
       }
-    }
-
-    async function fetchTodos() {
-      if (!currentUser) return alert('กรุณาล็อกอินก่อน');
-
-      const { data, error } = await supabaseClient
-        .from('todos')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
-
-      if (error) console.error(error);
-      else renderTodos(data);
-    }
-
-    function renderTodos(todos) {
-      const ul = document.getElementById('todo-list');
-      ul.innerHTML = '';
-      todos.forEach(todo => {
-        const li = document.createElement('li');
-        li.textContent = todo.title + (todo.completed ? ' ✅' : '');
-        ul.appendChild(li);
-      });
-    }
-
-    // Realtime
-    function setupRealtime() {
-      const channel = supabaseClient.channel('todos')
-        .on('postgres_changes', 
-          { event: '*', schema: 'public', table: 'todos' }, 
-          (payload) => {
-            document.getElementById('realtime-log').textContent += 
-              `\n[${new Date().toLocaleTimeString()}] มีการเปลี่ยนแปลง: ${payload.eventType}`;
-            fetchTodos();
-          })
-        .subscribe();
-
-      console.log('Realtime เปิดแล้ว');
+      
+      // Initialize the global layout
+      await initLayout(user, supabaseClient);
     }
 
     // เริ่มต้น
     checkUser();
-    setupRealtime();
   </script>
 </body>
 </html>

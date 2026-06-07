@@ -1,0 +1,45 @@
+:root {
+  --color-primary: #3ecf8e;
+  --color-primary-hover: #34b27d;
+  --color-bg: #f0fdf4;
+  --color-text-main: #333333;
+  --color-text-muted: #666666;
+  --font-family: 'Google Sans', sans-serif;
+}
+
+body {
+  font-family: var(--font-family);
+  margin: 0;
+  color: var(--color-text-main);
+}
+
+/* Global Utility Styles */
+.container {
+  padding: 20px;
+}
+
+button {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+pre {
+  background: #f4f4f4;
+  padding: 10px;
+  overflow: auto;
+  border-radius: 8px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* Shared button style for index.html */
+.btn-default {
+  margin: 5px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+}
+
+.btn-default:hover {
+  background: #f9f9f9;
+}
